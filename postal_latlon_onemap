@@ -1,7 +1,8 @@
-# Required library: jsonlite, httr
+# Required library: jsonlite, httr, sf
 # Required file: MasterPlan2019PlanningAreaBoundaryNoSea.kml
 library(jsonlite)
 library(httr)
+library(sf)
 
 # Querry longitude and latitude according to postal code in Singapore
 # pay attention to potential multiple results, i.e. data$found > 1
