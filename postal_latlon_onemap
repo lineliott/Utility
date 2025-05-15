@@ -1,0 +1,43 @@
+# Required library: jsonlite, httr
+# Required file: MasterPlan2019PlanningAreaBoundaryNoSea.kml
+library(jsonlite)
+library(httr)
+
+# Querry longitude and latitude according to postal code in Singapore
+# pay attention to potential multiple results, i.e. data$found > 1
+postal_latlon <- function (postal) {
+  # Define the URL
+  url <- paste0("https://www.onemap.gov.sg/api/common/elastic/search?searchVal=", postal ,"&returnGeom=Y&getAddrDetails=Y&pageNum=1")
+  # Send the GET request
+  response <- GET(url)
+  # Parse the JSON response
+  data <- fromJSON(content(response, "text"))
+  # Extract latitude and longitude
+  if (data$found > 0) {
+    latitude <- data$results["LATITUDE"]
+    longitude <- data$results["LONGITUDE"]
+    if (data$found > 1) {
+      latitude <- data$results["LATITUDE"][[1]][1]
+      longitude <- data$results["LONGITUDE"][[1]][1]
+    }
+
+  } else {
+    latitude <- NA
+    longitude <- NA
+  }
+  
+  latlon <- list()
+  latlon$postal = postal
+  latlon$lat = latitude
+  latlon$lon = longitude
+  return(latlon)
+}
+
+# Example of mapping a postal to the planning area multipolygon
+
+regions <- st_read("postal_latlon_onemap/MasterPlan2019PlanningAreaBoundaryNoSea.kml")
+
+location <- postal_latlon(560313)
+point <- st_point(x= c(as.numeric(location$lon), as.numeric(location$lat))) 
+plot(regions$geometry[52])
+plot(point, add=TRUE)
